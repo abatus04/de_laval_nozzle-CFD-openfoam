@@ -1,0 +1,226 @@
+/*--------------------------------*- C++ -*-----------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+scale   0.001;   // all coordinates in mm → converted to meters
+
+// ─── VERTICES ───────────────────────────────────────────────────────────────
+//
+//  FRONT FACE (z = 0):  vertices 0–7
+//  BACK FACE  (z = 1):  vertices 8–15  (identical x,y — offset in z only)
+//
+//  Wall profile (y values = radius at each x station):
+//  x=0:    r = 50mm  (inlet)
+//  x=100:  r = 26mm  (just before throat)
+//  x=130:  r = 25mm  (throat — minimum radius)
+//  x=280:  r = 50mm  (exit)
+//
+//  Axis is y = 0 throughout.
+
+vertices
+(
+    // ── FRONT FACE (z=0) ──────────────────────────────
+    // Block 0: converging section  x=[0, 100]
+    (   0    0    0)   // v0  axis,  inlet
+    ( 100    0    0)   // v1  axis,  throat-entry
+    ( 100   26    0)   // v2  wall,  throat-entry
+    (   0   50    0)   // v3  wall,  inlet
+
+    // Block 1: throat region  x=[100, 130]
+    ( 130    0    0)   // v4  axis,  throat-exit
+    ( 130   25    0)   // v5  wall,  throat (minimum radius)
+
+    // Block 2: diverging section  x=[130, 280]
+    ( 280    0    0)   // v6  axis,  exit
+    ( 280   50    0)   // v7  wall,  exit
+
+    // ── BACK FACE (z=1) — mirror of above ─────────────
+    (   0    0    1)   // v8
+    ( 100    0    1)   // v9
+    ( 100   26    1)   // v10
+    (   0   50    1)   // v11
+    ( 130    0    1)   // v12
+    ( 130   25    1)   // v13
+    ( 280    0    1)   // v14
+    ( 280   50    1)   // v15
+);
+
+// ─── EDGES ──────────────────────────────────────────────────────────────────
+// The wall is NOT straight between vertices — define the curved profile
+// using spline edges with intermediate interpolation points.
+//
+// These points trace the actual nozzle contour.
+// y values follow a parabolic profile: r(x) defined piecewise.
+
+edges
+(
+    // ── Converging wall: v3 → v2 (front face) ──
+    spline 3 2
+    (
+        (  0   50.0   0)
+        ( 20   47.2   0)
+        ( 40   42.8   0)
+        ( 60   37.2   0)
+        ( 80   31.3   0)
+        (100   26.0   0)
+    )
+
+    // ── Throat wall: v2 → v5 (front face) ──
+    spline 2 5
+    (
+        (100   26.0   0)
+        (110   25.2   0)
+        (120   25.0   0)   // minimum radius point
+        (130   25.0   0)
+    )
+
+    // ── Diverging wall: v5 → v7 (front face) ──
+    spline 5 7
+    (
+        (130   25.0   0)
+        (150   26.8   0)
+        (170   30.2   0)
+        (190   34.5   0)
+        (210   38.8   0)
+        (230   43.0   0)
+        (250   46.8   0)
+        (280   50.0   0)
+    )
+
+    // ── Repeat all splines for BACK FACE (z=1) ──
+    spline 11 10
+    (
+        (  0   50.0   1)
+        ( 20   47.2   1)
+        ( 40   42.8   1)
+        ( 60   37.2   1)
+        ( 80   31.3   1)
+        (100   26.0   1)
+    )
+
+    spline 10 13
+    (
+        (100   26.0   1)
+        (110   25.2   1)
+        (120   25.0   1)
+        (130   25.0   1)
+    )
+
+    spline 13 15
+    (
+        (130   25.0   1)
+        (150   26.8   1)
+        (170   30.2   1)
+        (190   34.5   1)
+        (210   38.8   1)
+        (230   43.0   1)
+        (250   46.8   1)
+        (280   50.0   1)
+    )
+);
+
+// ─── BLOCKS ─────────────────────────────────────────────────────────────────
+// hex (front-face CCW) (back-face CCW)
+// Remember vertex ordering: 0→1→2→3 bottom-left → bottom-right → top-right → top-left
+
+blocks
+(
+    // Block 0: converging section
+    hex (0 1 2 3   8 9 10 11)
+    (80 40 1)
+    simpleGrading
+    (
+        0.5       // axial: finer toward throat
+        0.25      // radial: finer toward wall
+        1
+    )
+
+    // Block 1: throat region
+    hex (1 4 5 2   9 12 13 10)
+    (30 40 1)
+    simpleGrading
+    (
+        1         // axial: uniform — finest zone already
+        0.25      // radial: finer toward wall
+        1
+    )
+
+    // Block 2: diverging section
+    hex (4 6 7 5   12 14 15 13)
+    (120 40 1)
+    simpleGrading
+    (
+        2         // axial: coarser toward exit, finer near throat
+        0.25      // radial: finer toward wall
+        1
+    )
+);
+
+// ─── BOUNDARY ───────────────────────────────────────────────────────────────
+
+boundary
+(
+    inlet
+    {
+        type    patch;
+        faces
+        (
+            (0 8 11 3)      // left face of Block 0
+        );
+    }
+
+    outlet
+    {
+        type    patch;
+        faces
+        (
+            (6 7 15 14)     // right face of Block 2
+        );
+    }
+
+    nozzleWall
+    {
+        type    wall;
+        faces
+        (
+            (3 11 10 2)     // top of Block 0 (curved converging wall)
+            (2 10 13 5)     // top of Block 1 (throat wall)
+            (5 13 15 7)     // top of Block 2 (curved diverging wall)
+        );
+    }
+
+    axis
+    {
+        type    symmetryPlane;
+        faces
+        (
+            (0 1 9 8)       // bottom of Block 0
+            (1 4 12 9)      // bottom of Block 1
+            (4 6 14 12)     // bottom of Block 2
+        );
+    }
+
+    frontAndBack
+    {
+        type    empty;      // 2D simulation — OpenFOAM ignores this direction
+        faces
+        (
+            // front face (z=0)
+            (0 1 2 3)
+            (1 4 5 2)
+            (4 6 7 5)
+            // back face (z=1)
+            (8 9 10 11)
+            (9 12 13 10)
+            (12 14 15 13)
+        );
+    }
+);
+
+mergePatchPairs
+();

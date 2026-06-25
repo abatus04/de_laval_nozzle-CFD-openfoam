@@ -1,0 +1,23 @@
+# OpenFOAM time directories (large data)
+0.[0-9]*/
+[1-9]*/
+[1-9][0-9]*/
+
+# Keep only initial conditions and results we care about
+!0/
+
+# Processor directories
+processor*/
+
+# Log files
+*.log
+log.*
+
+# ParaView files
+*.foam
+*.pvd
+*.vtp
+*.vtk
+
+# OS files
+.DS_Store

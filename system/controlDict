@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*-----------------------------------*/
+/*--------------------------------*- C++ -*-----------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     rhoCentralFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         0.02;          // short run — we'll extend if needed
+deltaT          1e-07;          // small timestep for stability with shocks
+
+writeControl    timeStep;
+writeInterval   1000;            // save every 100 steps
+
+runTimeModifiable true;
+
+functions
+{
+    MachNo
+    {
+        type            MachNo;
+        libs            (fieldFunctionObjects);
+        writeControl    writeTime;
+    }
+}

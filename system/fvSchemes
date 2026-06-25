@@ -1,0 +1,48 @@
+/*--------------------------------*- C++ -*-----------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+divSchemes
+{
+    default                             none;
+    div(phi,U)                          Gauss linearUpwind grad(U);
+    div(phi,e)                          Gauss linearUpwind grad(e);
+    div(phi,rho)                        Gauss linearUpwind grad(rho);
+    div(phiv,p)                         Gauss linearUpwind grad(p);
+    div(tauMC)                          Gauss linear;
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default             linear;
+    reconstruct(rho)    vanLeer;
+    reconstruct(U)      vanLeerV;
+    reconstruct(T)      vanLeer;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+

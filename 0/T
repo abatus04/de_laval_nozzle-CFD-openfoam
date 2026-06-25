@@ -1,0 +1,42 @@
+/*--------------------------------*- C++ -*-----------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      T;
+}
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform 300;
+
+boundaryField
+{
+    inlet
+    {
+        type            totalTemperature;
+        T0              uniform 600;
+        U               U;
+        phi             phi;
+        psi             thermo:psi;
+        gamma           1.4;
+        value           uniform 600;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    nozzleWall
+    {
+        type            zeroGradient;
+    }
+    axis
+    {
+        type            symmetryPlane;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
