@@ -3,6 +3,12 @@
 Simulation of compressible supersonic flow through a converging-diverging 
 (De Laval) nozzle using OpenFOAM's rhoCentralFoam solver.
 
+## Mach Number Contour (t = 0.02s)
+![Mach Contour](/mach_contour.png)
+
+## Validation — CFD vs Isentropic Theory
+![Validation](results/nozzle_validation.png)
+
 ## Physics
 - Compressible, inviscid flow
 - Inlet stagnation pressure: 500 kPa
