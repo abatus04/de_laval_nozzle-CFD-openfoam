@@ -6,9 +6,6 @@ Simulation of compressible supersonic flow through a converging-diverging
 ## Mach Number Contour (t = 0.02s)
 ![Mach Contour](results/mach_contour.png)
 
-## Validation — CFD vs Isentropic Theory
-![Validation](results/nozzle_validation.png)
-
 ## Physics
 - Compressible, inviscid flow
 - Inlet stagnation pressure: 500 kPa
